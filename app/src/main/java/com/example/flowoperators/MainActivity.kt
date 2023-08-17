@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.zip
@@ -48,6 +49,7 @@ class MainActivity : ComponentActivity() {
         val numbersAfterFlowOperatorDrop = mutableListOf<Int>()
         val numbersAfterFlowOperatorTake = mutableListOf<Int>()
         val numbersAfterFlowOperatorZip = mutableListOf<Int>()
+        var resultOfReduce = 0
 
         lifecycleScope.launch {
 
@@ -97,6 +99,11 @@ class MainActivity : ComponentActivity() {
                 .collect{
                     numbersAfterFlowOperatorZip.add(it)
                 }
+
+            // Terminal operators other than collect
+            resultOfReduce =  numbersFlow
+                .reduce { accumulator, value -> accumulator + value}
+
         }
 
         setContent {
@@ -114,6 +121,7 @@ class MainActivity : ComponentActivity() {
                         numbersAfterFlowOperatorDrop,
                         numbersAfterFlowOperatorTake,
                         numbersAfterFlowOperatorZip,
+                        resultOfReduce,
 
                         )
                 }
@@ -131,7 +139,8 @@ fun MainScreen(
     numbersAfterFlowOperatorDistinctUntilChanged: List<Int>,
     numbersAfterFlowOperatorDrop: List<Int>,
     numbersAfterFlowOperatorTake: List<Int>,
-    numbersAfterFlowOperatorCombine: List<Int>,
+    numbersAfterFlowOperatorZip: List<Int>,
+    resultOfReduce: Int,
     modifier: Modifier = Modifier
 ) {
 
@@ -173,7 +182,13 @@ fun MainScreen(
 
             OperatorItem(
                 title = "Applied Flow operator zip (sum numbers coming from numbersFlow and otherNumbersFlow)",
-                content = numbersAfterFlowOperatorCombine.toString(),
+                content = numbersAfterFlowOperatorZip.toString(),
+                modifier = modifier
+            )
+
+            OperatorItem(
+                title = "Applied Flow terminal operator reduce (sum of all numbers)",
+                content = resultOfReduce.toString(),
                 modifier = modifier
             )
 
@@ -198,7 +213,6 @@ fun TitleScreen(
 
         Text(text = "OtherNumbersFlow collected without applying any operator:")
         Text(text = otherNumbersFlowCollected.toString())
-
         Divider(modifier = Modifier.padding(8.dp), thickness = Dp.Hairline)
     }
 }
